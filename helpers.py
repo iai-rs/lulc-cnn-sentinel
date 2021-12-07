@@ -71,8 +71,12 @@ EVAL_SCRIPT_ALL_BANDS = """
 class SentinelHelper:
     """Implement relevant functions for working with Sentinel Hub."""
 
-    def __init__(self, wgs84_bbox, n_rows_div=3, n_cols_div=3, resolution=10):
+    def __init__(
+        self, wgs84_bbox, quartal, year, n_rows_div=3, n_cols_div=3, resolution=10
+    ):
         self._wgs84_bbox = wgs84_bbox
+        self._quartal = quartal
+        self._year = year
         self._n_rows_div = n_rows_div
         self._n_cols_div = n_cols_div
         self._resolution = resolution
@@ -178,6 +182,17 @@ class SentinelHelper:
         return mask
 
     @lazyproperty
+    def _time_interval(self) -> Tuple[str, str]:
+        """tuple(str, str) for sentinel request.
+
+        It has to be in the format: time_interval=("2021-06-01", "2021-09-30")."""
+        quartals = {1: ["01", "03"], 2: ["04", "06"], 3: ["07", "09"], 4: ["10", "12"]}
+        [start_month, end_month] = quartals[self._quartal]
+        start_date_str = f"{self._year}-{start_month}-01"
+        end_date_str = f"{self._year}-{end_month}-30"
+        return start_date_str, end_date_str
+
+    @lazyproperty
     def _img_patches(self):
         bblist = self._bbox_splitter.get_bbox_list()
         patches = []
@@ -187,7 +202,7 @@ class SentinelHelper:
                 input_data=[
                     SentinelHubRequest.input_data(
                         data_collection=DataCollection.SENTINEL2_L1C,
-                        time_interval=("2016-06-01", "2016-09-30"),
+                        time_interval=self._time_interval,
                         mosaicking_order="leastCC",
                     )
                 ],
@@ -215,21 +230,26 @@ class SentinelHelper:
     def _utm_bbox(self) -> Tuple[int, int, int, int]:
         """tuple of UTM bbox coordinates."""
         crs = CRS.UTM_34N
+        print(f"BBOX: {self._wgs84_bbox}")
         min_lon, min_lat, max_lon, max_lat = self._wgs84_bbox
         min_lon_utm, min_lat_utm = gu.wgs84_to_utm(min_lon, min_lat, utm_crs=crs)
         max_lon_utm, max_lat_utm = gu.wgs84_to_utm(max_lon, max_lat, utm_crs=crs)
         return min_lon_utm, min_lat_utm, max_lon_utm, max_lat_utm
 
 
+DIR = os.path.dirname(os.path.realpath(__file__))
+
+
 class NpuHelperForTF:
     """Initialize NPU session for TF on Ascend platform."""
 
-    def __init__(self):
+    def __init__(self, device_id, rank_id, rank_size, job_id, rank_table_file):
         # Init Ascend
-        os.environ["ASCEND_DEVICE_ID"] = "0"
-        os.environ["JOB_ID"] = "10385"
-        os.environ["RANK_ID"] = "0"
-        os.environ["RANK_SIZE"] = "1"
+        os.environ["ASCEND_DEVICE_ID"] = device_id
+        os.environ["JOB_ID"] = job_id
+        os.environ["RANK_ID"] = rank_id
+        os.environ["RANK_SIZE"] = rank_size
+        os.environ["RANK_TABLE_FILE"] = rank_table_file
 
         sess_config = tf.ConfigProto()
         custom_op = sess_config.graph_options.rewrite_options.custom_optimizers.add()

@@ -16,8 +16,7 @@ from npu_bridge.npu_init import *
 from tensorflow.keras.applications.densenet import DenseNet201 as DenseNet
 from tensorflow.keras.applications.vgg16 import VGG16 as VGG
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from tensorflow.keras.layers import (Conv2D, Dense, GlobalAveragePooling2D,
-                                     Input)
+from tensorflow.keras.layers import Conv2D, Dense, GlobalAveragePooling2D, Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import SGD
 from tensorflow.python.keras import backend as K
