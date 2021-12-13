@@ -36,7 +36,7 @@ def run_inference(filename):
                 "rank_table_file": f"{DIR}/2p.json",
             },
         ]
-        for i, (bbox_str, quartal, year) in enumerate(get_inputs(filename))
+        for i, (year, quartal, bbox_str) in enumerate(get_inputs(filename))
     ]
 
     tg = Inferer().run
