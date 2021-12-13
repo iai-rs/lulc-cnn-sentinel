@@ -147,6 +147,7 @@ cython_debug/
 # Sentinel specific content
 /data
 /small_data
+/kernel_meta
 fused.png
 fusion_result.json
 input.txt
