@@ -19,11 +19,15 @@ class Inferer:
 
     model_path = f"{DIR}/data/models/vgg_ms_transfer_final.44-0.969.hdf5"
 
+    @lazyproperty
+    def _model(self):
+        return load_model(self.model_path)
+
     def run(self, bbox, quartal, year, npu_config):
         """Execute inference procedure."""
         # ------------------------ INIT NPU BEFORE LOADING MODEL ----------------------
         sess = NpuHelperForTF(**npu_config).sess
-        model = load_model(self.model_path)
+        model = self._model
         in_shp = model.layers[0].input_shape[0][1:3]
 
         # ------------------------ LOAD IMAGE FROM SENTINEL ---------------------------
@@ -35,8 +39,10 @@ class Inferer:
         sess.close()  # close NPU session right after inference
 
         # ------------------------ WRITING RESULT IMAGES ------------------------------
-        tc_filename = "fused.png"
-        classes_filename = f"classes{bbox}.tiff".replace(" ", "")
+        bbox_str = "-".join(str(c) for c in bbox)
+        fn_base = f"{DIR}/data/results/{year}-{quartal}-{bbox_str}"
+        tc_filename = f"{fn_base}-fused.png"
+        classes_filename = f"{fn_base}-classes.tiff"
         sh.write_result(rows_classified, tc_filename, classes_filename)
 
 

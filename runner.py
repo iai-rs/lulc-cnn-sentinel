@@ -8,10 +8,13 @@ from inference_script import Inferer
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 DEVICE_IDS = ["0", "1"]
-RANK_SIZE = "2"
-RANK_IDS = ["0", "1"]
+# RANK_SIZE = "2"
+RANK_SIZE = "1"
+# RANK_IDS = ["0", "1"]
+RANK_IDS = ["0", "0"]
 JOB_ID = "10385"
-TABLE_FILE = f"{DIR}/2p.json"
+# TABLE_FILE = f"{DIR}/2p.json"
+TABLE_FILE = f""
 
 
 def get_inputs(filename):
@@ -25,7 +28,7 @@ def run_inference(filename):
     n_devices = len(DEVICE_IDS)
     inputs = [
         [
-            bbox_str.split(","),
+            bbox_str.strip("\n").split(","),
             int(quartal),
             int(year),
             {
