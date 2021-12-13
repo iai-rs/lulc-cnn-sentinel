@@ -21,25 +21,23 @@ class Inferer:
 
     def run(self, bbox, quartal, year, npu_config):
         """Execute inference procedure."""
+        # ------------------------ INIT NPU BEFORE LOADING MODEL ----------------------
+        sess = NpuHelperForTF(**npu_config).sess
+        model = load_model(self.model_path)
+        in_shp = model.layers[0].input_shape[0][1:3]
+
         # ------------------------ LOAD IMAGE FROM SENTINEL ---------------------------
         sh = SentinelHelper(bbox, quartal, year)
-        in_shp = self._model.layers[0].input_shape[0][1:3]
         gen, steps = sh.input_generator(in_shp), sh.image.shape[0]
 
         # ------------------------ GENERATING PREDICTIONS -----------------------------
-        sess = NpuHelperForTF(**npu_config).sess
-        rows_classified = self._model.predict(gen, steps=steps, verbose=1)
-        sess.close()  # close NPU session right after training
+        rows_classified = model.predict(gen, steps=steps, verbose=1)
+        sess.close()  # close NPU session right after inference
 
         # ------------------------ WRITING RESULT IMAGES ------------------------------
         tc_filename = "fused.png"
         classes_filename = f"classes{bbox}.tiff".replace(" ", "")
         sh.write_result(rows_classified, tc_filename, classes_filename)
-
-    @lazyproperty
-    def _model(self):
-        """TF model loaded from the predefined path."""
-        return load_model(self.model_path)
 
 
 if __name__ == "__main__":
