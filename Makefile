@@ -14,7 +14,7 @@ PYTHON = python3
 LOGS = "/root/ascend/log/plog/"
 
 # Use the `CONTAINER` variable to set the container you want to use
-CONTAINER = tensorflow_container
+CONTAINER = unet_container
 
 DOCKER_EXEC = docker exec -w $(PWD) -it $(CONTAINER)
 LOG_CMD = "ls -1tr $(LOGS) | tail -n 1 | xargs -I {} cat $(LOGS){}"
@@ -37,7 +37,7 @@ help:
 	@echo '             values:   /home/username/process1.sh     - for training_hanson example'
 
 npu:
-	@$(DOCKER_EXEC) npu-smi info
+	@$(DOCKER_EXEC) watch -n 0.1 npu-smi info
 
 log:
 	@$(DOCKER_EXEC) bash -c $(LOG_CMD)

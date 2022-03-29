@@ -2,9 +2,14 @@
 """Home of the inference runner across multiple NPU devices."""
 
 import os
+import csv
 from multiprocessing import Pool, Process
 
 from inference_script import Inferer
+
+YEARS = ["2016", "2017", "2018", "2019", "2020", "2021"]
+# QUARTALS = ["1", "2", "3", "4"]
+QUARTALS = ["1", "3"]
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 DEVICE_IDS = ["0", "1"]
@@ -23,34 +28,76 @@ def get_inputs(filename):
         return [line.split(" ") for line in f.readlines()]
 
 
+def load_bboxes_from_polygons(filename) -> list:
+    """list of lists of str inputs for sentinel."""
+    with open(filename, newline="") as f:
+        reader = csv.reader(f, delimiter=",")
+        rows = [row for row in reader][1:]
+    polygons = {}
+    for [id_, lon, lat, *row] in rows:
+        if id_ not in polygons:
+            polygons[id_] = {"lats": [], "lons": []}
+        polygons[id_]["lats"].append(lat)
+        polygons[id_]["lons"].append(lon)
+    bboxes = {
+        (
+            min(polygons[id_]["lons"]),
+            min(polygons[id_]["lats"]),
+            max(polygons[id_]["lons"]),
+            max(polygons[id_]["lats"]),
+        )
+        for id_ in polygons
+    }
+    return [
+        {"year": year, "quartal": quartal, "bbox": bbox}
+        for year in YEARS
+        for quartal in QUARTALS
+        for bbox in bboxes
+    ]
+
+
+
 def run_inference(filename):
     """Run sentinel inference script on multiple NPU devices."""
     n_devices = len(DEVICE_IDS)
+    data = load_bboxes_from_polygons(filename)
     inputs = [
         [
-            bbox_str.strip("\n").split(","),
-            int(quartal),
-            int(year),
-            {
-                "device_id": DEVICE_IDS[i % n_devices],
-                "rank_id": str(i % n_devices),
-                "rank_size": RANK_SIZE,
-                "job_id": JOB_ID,
-                "rank_table_file": f"{DIR}/2p.json",
-            },
+            row['bbox'],
+            int(row['quartal']),
+            int(row['year']),
         ]
-        for i, (year, quartal, bbox_str) in enumerate(get_inputs(filename))
+        for row in data
     ]
+    pconfigs = {
+        DEVICE_IDS[i]: {
+            "device_id": DEVICE_IDS[i],
+            "rank_id": str(i),
+            "rank_size": RANK_SIZE,
+            "job_id": JOB_ID,
+            "rank_table_file": f"{DIR}/2p.json",
+        }
+        for i in range(2)
+    }
 
     tg = Inferer().run
-    pool = {dev_id: Process(target=tg, args=inputs.pop()) for dev_id in DEVICE_IDS}
-    for pid in pool:
-        pool[pid].start()
+    pool = {
+        dev_id: Process(target=tg, args=(inputs.pop() + [pconfigs[dev_id]]))
+        for dev_id in DEVICE_IDS
+    }
+
+    n_inputs = len(inputs)
+
+    # --- Initial process start for all devices ---
+    for dev_id in pool:
+        pool[dev_id].start()
+
     while inputs:
         for dev_id in pool:
             if pool[dev_id].is_alive():
                 continue
-            pool[dev_id] = Process(target=tg, args=inputs.pop())
+            print(f"******************** AT POLYGON: {len(inputs)} of {n_inputs} *******************")
+            pool[dev_id] = Process(target=tg, args=(inputs.pop() + [pconfigs[dev_id]]))
             pool[dev_id].start()
 
     for dev_id in pool:
@@ -58,4 +105,5 @@ def run_inference(filename):
 
 
 if __name__ == "__main__":
-    run_inference("input.txt")
+    # run_inference("vertexChina.csv")
+    run_inference("filtVertex.csv")

@@ -25,6 +25,15 @@ class Inferer:
 
     def run(self, bbox, quartal, year, npu_config):
         """Execute inference procedure."""
+        # ------------------------ PREPARE FILENAMES ----------------------------------
+        bbox_str = "-".join(str(c) for c in bbox)
+        fn_base = f"{DIR}/data/results/{year}-{quartal}-{bbox_str}"
+        tc_filename = f"{fn_base}-fused.png"
+        classes_filename = f"{fn_base}-classes.tiff"
+        if os.path.exists(tc_filename) or os.path.exists(classes_filename):
+            # --- Don't repeat training already executed
+            return
+
         # ------------------------ INIT NPU BEFORE LOADING MODEL ----------------------
         sess = NpuHelperForTF(**npu_config).sess
         model = self._model
@@ -39,10 +48,6 @@ class Inferer:
         sess.close()  # close NPU session right after inference
 
         # ------------------------ WRITING RESULT IMAGES ------------------------------
-        bbox_str = "-".join(str(c) for c in bbox)
-        fn_base = f"{DIR}/data/results/{year}-{quartal}-{bbox_str}"
-        tc_filename = f"{fn_base}-fused.png"
-        classes_filename = f"{fn_base}-classes.tiff"
         sh.write_result(rows_classified, tc_filename, classes_filename)
 
 

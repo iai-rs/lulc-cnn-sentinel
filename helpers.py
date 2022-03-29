@@ -21,7 +21,6 @@ from tensorflow.core.protobuf.rewriter_config_pb2 import RewriterConfig
 from typing import Tuple
 from utils import lazyproperty
 from image_functions import preprocessing_image_ms as preprocess
-from skimage.util import pad
 import tensorflow as tf
 import tensorflow.python.keras as keras
 from npu_bridge.estimator import npu_ops
@@ -33,9 +32,9 @@ from tensorflow.python.keras import backend as K
 
 # ---Configure Sentinel Hub API---
 shc = SHConfig()
-shc.instance_id = "36d50fd6-4fb7-4b29-94e5-a5c84a1bc55a"
-shc.sh_client_id = "dab1034d-cdff-4071-8155-3dbd25079a27"
-shc.sh_client_secret = "n(9*:#t8u!Lx&VVn8j<QL6CU<<!#HpFIL771dM_P"
+# shc.instance_id = ""
+shc.sh_client_id = "24550f2c-330b-4dff-ab0f-d4f095b855ac"
+shc.sh_client_secret = "|g>;cD:N3CfP<hkq-CPh6n2*xC<}57*xlr2!C?e~"
 shc.save()
 
 
@@ -72,7 +71,7 @@ class SentinelHelper:
     """Implement relevant functions for working with Sentinel Hub."""
 
     def __init__(
-        self, wgs84_bbox, quartal, year, n_rows_div=3, n_cols_div=3, resolution=10
+        self, wgs84_bbox, quartal, year, n_rows_div=4, n_cols_div=4, resolution=10
     ):
         self._wgs84_bbox = wgs84_bbox
         self._quartal = quartal
@@ -95,7 +94,7 @@ class SentinelHelper:
         n_rows, n_cols, _ = self.image.shape
 
         data = preprocess(
-            pad(
+            np.pad(
                 self.image,
                 ((half_rows, half_rows), (half_cols, half_cols), (0, 0)),
                 "symmetric",
