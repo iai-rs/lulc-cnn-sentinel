@@ -7,16 +7,18 @@ from multiprocessing import Pool, Process
 
 from inference_script import Inferer
 
-YEARS = ["2016", "2017", "2018", "2019", "2020", "2021"]
-# QUARTALS = ["1", "2", "3", "4"]
-QUARTALS = ["1", "3"]
+# YEARS = ["2016", "2017", "2018", "2019", "2020", "2021"]
+YEARS = ["2021"]
+MONTHS = ["0", "1"]
 
 DIR = os.path.dirname(os.path.realpath(__file__))
-DEVICE_IDS = ["0", "1"]
+# DEVICE_IDS = ["0", "1"]
+DEVICE_IDS = ["0"]
 # RANK_SIZE = "2"
 RANK_SIZE = "1"
 # RANK_IDS = ["0", "1"]
-RANK_IDS = ["0", "0"]
+# RANK_IDS = ["0", "0"]
+RANK_IDS = ["0"]
 JOB_ID = "10385"
 # TABLE_FILE = f"{DIR}/2p.json"
 TABLE_FILE = f""
@@ -49,9 +51,9 @@ def load_bboxes_from_polygons(filename) -> list:
         for id_ in polygons
     }
     return [
-        {"year": year, "quartal": quartal, "bbox": bbox}
+        {"year": year, "month": month, "bbox": bbox}
         for year in YEARS
-        for quartal in QUARTALS
+        for month in MONTHS
         for bbox in bboxes
     ]
 
@@ -64,7 +66,7 @@ def run_inference(filename):
     inputs = [
         [
             row['bbox'],
-            int(row['quartal']),
+            int(row['month']),
             int(row['year']),
         ]
         for row in data
@@ -77,7 +79,8 @@ def run_inference(filename):
             "job_id": JOB_ID,
             "rank_table_file": f"{DIR}/2p.json",
         }
-        for i in range(2)
+        # for i in range(2)
+        for i in range(1)
     }
 
     tg = Inferer().run
@@ -105,5 +108,5 @@ def run_inference(filename):
 
 
 if __name__ == "__main__":
-    # run_inference("vertexChina.csv")
-    run_inference("filtVertex.csv")
+    run_inference("yearlyNoviSad.csv")
+    # run_inference("filtVertex.csv")

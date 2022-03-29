@@ -71,10 +71,12 @@ class SentinelHelper:
     """Implement relevant functions for working with Sentinel Hub."""
 
     def __init__(
-        self, wgs84_bbox, quartal, year, n_rows_div=4, n_cols_div=4, resolution=10
+        # self, wgs84_bbox, quartal, year, n_rows_div=4, n_cols_div=4, resolution=10
+        self, wgs84_bbox, month, year, n_rows_div=4, n_cols_div=4, resolution=10
     ):
         self._wgs84_bbox = wgs84_bbox
-        self._quartal = quartal
+        # self._quartal = quartal
+        self._month = month
         self._year = year
         self._n_rows_div = n_rows_div
         self._n_cols_div = n_cols_div
@@ -185,10 +187,13 @@ class SentinelHelper:
         """tuple(str, str) for sentinel request.
 
         It has to be in the format: time_interval=("2021-06-01", "2021-09-30")."""
-        quartals = {1: ["01", "03"], 2: ["04", "06"], 3: ["07", "09"], 4: ["10", "12"]}
-        [start_month, end_month] = quartals[self._quartal]
-        start_date_str = f"{self._year}-{start_month}-01"
-        end_date_str = f"{self._year}-{end_month}-30"
+        # quartals = {1: ["01", "03"], 2: ["04", "06"], 3: ["07", "09"], 4: ["10", "12"]}
+        # [start_month, end_month] = quartals[self._quartal]
+        # start_date_str = f"{self._year}-{start_month}-01"
+        # end_date_str = f"{self._year}-{end_month}-30"
+        days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        start_date_str = f"{self._year}-{self._month + 1}-01"
+        end_date_str = f"{self._year}-{self._month + 1}-{days[self._month]}"
         return start_date_str, end_date_str
 
     @lazyproperty
@@ -248,7 +253,7 @@ class NpuHelperForTF:
         os.environ["JOB_ID"] = job_id
         os.environ["RANK_ID"] = rank_id
         os.environ["RANK_SIZE"] = rank_size
-        os.environ["RANK_TABLE_FILE"] = rank_table_file
+        # os.environ["RANK_TABLE_FILE"] = rank_table_file
 
         sess_config = tf.ConfigProto()
         custom_op = sess_config.graph_options.rewrite_options.custom_optimizers.add()

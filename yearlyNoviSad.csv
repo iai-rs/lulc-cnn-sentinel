@@ -1,0 +1,5 @@
+id,lon,lat,NAME_0,NAME_1,NAME_2,vertex_index,angle
+46,21.12,43.68,Serbia,Rasinski,Kruševac,1,45
+46,21.14,43.68,Serbia,Rasinski,Kruševac,2,135
+46,21.14,43.66,Serbia,Rasinski,Kruševac,3,225
+46,21.12,43.66,Serbia,Rasinski,Kruševac,4,315

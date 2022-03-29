@@ -23,11 +23,12 @@ class Inferer:
     def _model(self):
         return load_model(self.model_path)
 
-    def run(self, bbox, quartal, year, npu_config):
+    def run(self, bbox, month, year, npu_config):
         """Execute inference procedure."""
         # ------------------------ PREPARE FILENAMES ----------------------------------
         bbox_str = "-".join(str(c) for c in bbox)
-        fn_base = f"{DIR}/data/results/{year}-{quartal}-{bbox_str}"
+        # fn_base = f"{DIR}/data/monthly/{year}-{quartal}-{bbox_str}"
+        fn_base = f"{DIR}/data/monthly/{year}-{month + 1}-{bbox_str}"
         tc_filename = f"{fn_base}-fused.png"
         classes_filename = f"{fn_base}-classes.tiff"
         if os.path.exists(tc_filename) or os.path.exists(classes_filename):
@@ -40,7 +41,8 @@ class Inferer:
         in_shp = model.layers[0].input_shape[0][1:3]
 
         # ------------------------ LOAD IMAGE FROM SENTINEL ---------------------------
-        sh = SentinelHelper(bbox, quartal, year)
+        # sh = SentinelHelper(bbox, quartal, year)
+        sh = SentinelHelper(bbox, month, year)
         gen, steps = sh.input_generator(in_shp), sh.image.shape[0]
 
         # ------------------------ GENERATING PREDICTIONS -----------------------------
@@ -66,4 +68,6 @@ if __name__ == "__main__":
         "job_id": job_id,
         "rank_table_file": f"{DIR}/2p.json",
     }
+    from pprint import pprint
+    pprint(npu_config)
     Inferer().run(bbox, quartal, year, npu_config)
