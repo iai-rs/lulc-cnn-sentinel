@@ -77,7 +77,7 @@ def simple_image_generator(
     horizontal_flip=False,
     vertical_flip=False,
 ):
-
+    dim = 32
     while True:
         # select batch_size number of samples without replacement
         batch_files = sample(files, batch_size)
@@ -108,6 +108,9 @@ def simple_image_generator(
                     image, angle, mode="reflect", order=1, preserve_range=True
                 )
             # put all together
+            start = dim // 2
+            end = start + dim
+            image = image[start:end, start:end, :]
             batch_X += [image]
         # convert lists to np.array
         X = np.array(batch_X)

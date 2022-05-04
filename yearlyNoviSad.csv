@@ -1,5 +1,5 @@
 id,lon,lat,NAME_0,NAME_1,NAME_2,vertex_index,angle
-46,21.12,43.68,Serbia,Rasinski,Kruševac,1,45
-46,21.14,43.68,Serbia,Rasinski,Kruševac,2,135
-46,21.14,43.66,Serbia,Rasinski,Kruševac,3,225
-46,21.12,43.66,Serbia,Rasinski,Kruševac,4,315
+20,19.5335407254242,45.4315795895265,Serbia,Južno-Bački,Novi Sad,1,45
+20,20.0865802763587,45.4315795895265,Serbia,Južno-Bački,Novi Sad,2,135
+20,20.0865802763587,45.1451034547607,Serbia,Južno-Bački,Novi Sad,3,225
+20,19.5335407254242,45.1451034547607,Serbia,Južno-Bački,Novi Sad,4,315

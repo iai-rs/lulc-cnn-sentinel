@@ -37,6 +37,8 @@ shc.sh_client_id = "24550f2c-330b-4dff-ab0f-d4f095b855ac"
 shc.sh_client_secret = "|g>;cD:N3CfP<hkq-CPh6n2*xC<}57*xlr2!C?e~"
 shc.save()
 
+# crs = CRS.UTM_49N
+crs = CRS.UTM_34N
 
 EVAL_SCRIPT_ALL_BANDS = """
     //VERSION=3
@@ -119,6 +121,10 @@ class SentinelHelper:
         # ---Write classes file as a tiff, for georeferencing from GIS tools---
         cv2.imwrite(classes_filename, classes)
 
+    def write_tc(self, tc_filename):
+        """Write fused true color image with land coverage use colors overlayed."""
+        cv2.imwrite(tc_filename, self.tc_image)
+
     def save(self, filename):
         """Write true color image from all 13 bands from sentinel."""
         tc_image = np.array(self.image[:, :, 1:4] * 3.5 / 1e4 * 255, dtype="uint8")
@@ -159,9 +165,9 @@ class SentinelHelper:
     @lazyproperty
     def _bbox_splitter(self) -> BBoxSplitter:
         """BBoxSplitter from a larger bbox, using UTM coordinates."""
-        bbox = BBox(bbox=self._utm_bbox, crs=CRS.UTM_34N)
+        bbox = BBox(bbox=self._utm_bbox, crs=crs)
         return BBoxSplitter(
-            [bbox.geometry], CRS.UTM_34N, (self._n_rows_div, self._n_cols_div)
+            [bbox.geometry], crs, (self._n_rows_div, self._n_cols_div)
         )
 
     def _create_mask(self, labels) -> np.array:
@@ -233,7 +239,6 @@ class SentinelHelper:
     @lazyproperty
     def _utm_bbox(self) -> Tuple[int, int, int, int]:
         """tuple of UTM bbox coordinates."""
-        crs = CRS.UTM_34N
         print(f"BBOX: {self._wgs84_bbox}")
         min_lon, min_lat, max_lon, max_lat = self._wgs84_bbox
         min_lon_utm, min_lat_utm = gu.wgs84_to_utm(min_lon, min_lat, utm_crs=crs)
@@ -249,6 +254,8 @@ class NpuHelperForTF:
 
     def __init__(self, device_id, rank_id, rank_size, job_id, rank_table_file):
         # Init Ascend
+        print("deviceid:")
+        print(device_id)
         os.environ["ASCEND_DEVICE_ID"] = device_id
         os.environ["JOB_ID"] = job_id
         os.environ["RANK_ID"] = rank_id

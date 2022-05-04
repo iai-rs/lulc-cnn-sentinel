@@ -9,7 +9,9 @@ from inference_script import Inferer
 
 # YEARS = ["2016", "2017", "2018", "2019", "2020", "2021"]
 YEARS = ["2021"]
-MONTHS = ["0", "1"]
+# YEARS = ["2019", "2020", "2021"]
+# MONTHS = [str(i) for i in range(12)]
+MONTHS = ["9"]
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 # DEVICE_IDS = ["0", "1"]
@@ -63,6 +65,7 @@ def run_inference(filename):
     """Run sentinel inference script on multiple NPU devices."""
     n_devices = len(DEVICE_IDS)
     data = load_bboxes_from_polygons(filename)
+    print(data)
     inputs = [
         [
             row['bbox'],

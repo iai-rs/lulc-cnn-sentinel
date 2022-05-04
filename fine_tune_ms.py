@@ -61,12 +61,13 @@ sess = tf.Session(config=sess_config)
 K.set_session(sess)
 
 # parameters for CNN
-input_tensor = Input(shape=(64, 64, 13))
+dim = 32
+input_tensor = Input(shape=(dim, dim, 13))
 # introduce a additional layer to get from 13 to 3 input channels
 input_tensor = Conv2D(3, (1, 1))(input_tensor)
 if use_vgg:
     base_model_imagenet = VGG(
-        include_top=False, weights="imagenet", input_shape=(64, 64, 3)
+        include_top=False, weights="imagenet", input_shape=(dim, dim, 3)
     )
     base_model = VGG(include_top=False, weights=None, input_tensor=input_tensor)
     for i, layer in enumerate(base_model_imagenet.layers):
@@ -76,7 +77,7 @@ if use_vgg:
         base_model.layers[i + 1].set_weights(layer.get_weights())
 else:
     base_model_imagenet = DenseNet(
-        include_top=False, weights="imagenet", input_shape=(64, 64, 3)
+        include_top=False, weights="imagenet", input_shape=(dim, dim, 3)
     )
     base_model = DenseNet(include_top=False, weights=None, input_tensor=input_tensor)
     for i, layer in enumerate(base_model_imagenet.layers):

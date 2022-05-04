@@ -14,7 +14,7 @@ PYTHON = python3
 LOGS = "/root/ascend/log/plog/"
 
 # Use the `CONTAINER` variable to set the container you want to use
-CONTAINER = unet_container
+CONTAINER = test_new_img_container
 
 DOCKER_EXEC = docker exec -w $(PWD) -it $(CONTAINER)
 LOG_CMD = "ls -1tr $(LOGS) | tail -n 1 | xargs -I {} cat $(LOGS){}"
